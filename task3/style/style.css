@@ -1,0 +1,12 @@
+.tank
+{
+    width: 32px;
+    height: 39px;
+    position: absolute;
+    background: url("../img/t34.png");
+}
+
+body
+{
+    background: url("../img/background2.png");
+}
