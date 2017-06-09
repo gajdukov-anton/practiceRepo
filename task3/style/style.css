@@ -3,10 +3,10 @@
     width: 32px;
     height: 39px;
     position: absolute;
-    background: url("../style/t34.png");
+    background: url("../img/t34.png");
 }
 
 body
 {
-    background: url("../style/background2.png");
+    background: url("../img/background2.png");
 }
