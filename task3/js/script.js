@@ -26,39 +26,26 @@ let Tank = {
         let speed = 5;
         x = tank.offsetLeft;
         y = tank.offsetTop;
-        let element = document.elementFromPoint(x, y);
         switch (direction) {
             case RIGHT:
                 tank.style.left = x + speed + "px";
                 tank.style.backgroundPosition = -42 + "px";
                 FireDirection = chooseFireDirection(direction);
-                if (element == null) {
-                    tank.style.left = x - speed + "px";
-                }
                 break;
             case LEFT:
                 tank.style.left = x - speed + "px";
                 tank.style.backgroundPosition = -2 + "px";
                 FireDirection = chooseFireDirection(direction);
-                if (element == null) {
-                    tank.style.left = x + speed + "px";
-                }
                 break;
             case BOTTOM:
                 tank.style.backgroundPosition = 70 + "px";
                 tank.style.top = y + speed + "px";
                 FireDirection = chooseFireDirection(direction);
-                if (element == null) {
-                    tank.style.top = y - speed + "px";
-                }
                 break;
             case TOP:
                 tank.style.backgroundPosition = -105 + "px";
                 tank.style.top = y - speed + "px";
                 FireDirection = chooseFireDirection(direction);
-                if (element == null) {
-                    tank.style.top = y + speed + "px";
-                }
                 break;
         }
     }
