@@ -1,5 +1,6 @@
 .tank
 {
+    display: none;
     width: 32px;
     height: 39px;
     position: absolute;
@@ -9,4 +10,7 @@
 body
 {
     background: url("../img/background2.png");
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
