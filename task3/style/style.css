@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .tank
 {
     width: 32px;
@@ -9,4 +10,21 @@
 body
 {
     background: url("../img/background2.png");
+=======
+.tank
+{
+    display: none;
+    width: 32px;
+    height: 39px;
+    position: absolute;
+    background: url("../img/t34.png");
+}
+
+body
+{
+    background: url("../img/background2.png");
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+>>>>>>> 98759a50fe85dc42ed89974067ccaeb07d1c2d2a
 }
