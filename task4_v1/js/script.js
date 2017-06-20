@@ -62,15 +62,15 @@ let Enemy = function (id) {
 
     this.create = function(id)  {
         let containerEnemy = document.getElementById(id); //!
-        let  enemy = document.createElement("img");
-        enemy.src = "img/enemy.png";
+        let  enemy = document.createElement("div");
         containerEnemy.appendChild(enemy);
         enemy.id = 'enem';
-        containerEnemy.style.width = "50px";
-        containerEnemy.style.height = "50px";
+        enemy.style.width = "50px";
+        enemy.style.height = "50px";
         enemy.style.position = "absolute";
         enemy.style.left = Math.random() * 1000 + 'px';
         enemy.style.top = Math.random() * 500 + 'px';
+        enemy.style.backgroundImage = "url(img/enemy.png)";
     };
 
 
@@ -117,9 +117,6 @@ let Enemy = function (id) {
 
     };
 
-
-
-
     this.initialize();
 };
 
@@ -133,6 +130,7 @@ let Tank = function(id) {
     this.bulletContainer = null;
     this.bulletsCount = 1000;
     this.speed = 10;
+    this.Start = false;
 
     this.initialize = () => {
         this.tankDomElement = document.getElementById(id);
@@ -162,8 +160,8 @@ let Tank = function(id) {
 
     this.getBulletPosition = () => {
         return {
-            top: parseFloat(this.tankDomElement.style.top),
-            left: parseFloat(this.tankDomElement.style.left)
+            top: this.tankDomElement.offsetTop,
+            left:this.tankDomElement.offsetLeft
         };
     };
 
@@ -171,8 +169,11 @@ let Tank = function(id) {
         this.direction = newDirection;
         moveDomElement(this.tankDomElement, this.direction, this.speed);
         this.updateBackgroundImage();
+        this.Start = true;
     };
+
     bulletId = id + 'bullet' + this.bulletsCount;
+
     this.fire = () => {
         if (this.bulletsCount > 0)
         {
@@ -184,10 +185,10 @@ let Tank = function(id) {
 
     };
 
-    this.info = () => {
-        let information =this.bulletsCount + ' ' +  counter;
-        document.getElementById('infogame').innerHTML = information;
-    }
+    this.infoBullet = () => {
+        let information = 'Bullet: ' +  this.bulletsCount + ' ' ;
+        document.getElementById('infobullet').innerHTML = information;
+    };
 
     this.initialize();
 };
@@ -203,9 +204,9 @@ let Bullet = function(container, id, position) {
         bullet.id = id;
         bullet.style.width = "10px";
         bullet.style.height = "2px";
-        bullet.style.position = "relative";
-        bullet.style.left = position.left + "px";
-        bullet.style.top = position.top + "px";
+        bullet.style.position = "absolute";
+        bullet.style.left = position.left + 9 + "px";
+        bullet.style.top = position.top + 19 + "px";
         return bullet;
     };
 
@@ -218,14 +219,14 @@ let Bullet = function(container, id, position) {
         this.bullDomElement.style.transform = 'rotate(' + direction + 'deg)';
         setInterval(() => {
             moveDomElement(this.bullDomElement, direction, this.speed);
-            this.delet(container, id);
-            this.destroy(enem, 'enem')
+        this.delety(container, id);
+        this.destroy(enem, 'enem')
     }, 1000 / FRAME_PER_SECONDS)
     };
 
     this.initialize();
 
-    this.delet = function (container, id)
+    this.delety = function (container, id)
     {
         let bul = document.getElementById(id);
         if (bul != null)
@@ -237,7 +238,6 @@ let Bullet = function(container, id, position) {
             let elem = document.elementFromPoint(xx, yy);
             if (elem == null) {
                 container.removeChild(bul);
-                count();
             }
         }
     };
@@ -253,7 +253,9 @@ let Bullet = function(container, id, position) {
             let c = y + 50;
             if  ((xx >= x) && (xx <= z) && ((yy >= y) && (yy <= c))) {
                 container.removeChild(enemy);
-
+                count();
+                let kills =  'Kills: ' +  counter;
+                document.getElementById('infokills').innerHTML = kills;
             }
         }
     };
@@ -278,7 +280,7 @@ function getAction(e)
         default:
             return NONE;
     }
-}
+};
 
 let isMoveAction = (action) => {
     return action === LEFT ||
@@ -291,36 +293,33 @@ let isFireAction = (action) => {
     return action === FIRE;
 };
 
+
 /*let Game = function() {
-    this.player = null;
-    this.score = 0;
-
-    this.initialize = () => {
-        this.player = new Tank('Tanchik');
-    };
-
-    this.createEnemies = () => {
-        // случайным образом расположить вражеские танки
-        // которые через случайные промежутки времени стреляют
-    };
-
-    //this.initialize();
-};*/
+ this.player = null;
+ this.score = 0;
+ this.initialize = () => {
+ this.player = new Tank('Tanchik');
+ };
+ this.createEnemies = () => {
+ // случайным образом расположить вражеские танки
+ // которые через случайные промежутки времени стреляют
+ };
+ //this.initialize();
+ };*/
 
 window.onload = function () {
     let tank = new Tank('Tanchik');
-  //  for (i = 0; i < 10; i++)
-        let enemy = new Enemy('enemys');
+    let enemy = new Enemy('enemys');
     addEventListener("keydown", (e) => {
         let action = getAction(e);
-      if (isMoveAction(action))
+    tank.infoBullet();
+    if (isMoveAction(action))
     {
         tank.go(action);
     }
-    else if (isFireAction(action))
+    else if (isFireAction(action) && tank.Start)
     {
         tank.fire();
     }
-    tank.info();
 });
 };
