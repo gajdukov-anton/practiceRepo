@@ -4,10 +4,10 @@ let TOP = '90';
 let BOTTOM = '-90';
 let NONE = 'none';
 let FIRE = '1';
-let LeftDirection = false;
-let RightDirection = false;
-let UpDirection = false;
-let DownDirection = false;
+let LEFTTOP = '45';
+let RIGHTTOP = '135';
+let LEFTBOTTOM = '-45';
+let RIGHTBOTTOM = '-135';
 let Keys = {
     RIGHT: 39,
     LEFT: 37,
@@ -22,22 +22,35 @@ let ButtonState = {
     PRESS: 'press'
 };
 
-let Barrier = () =>
+let Barrier = function (id)
 {
-    let obstacle = document.getElementById('barrier');
-    barrier = document.createElement("div");
-    obstacle.appendChild(barrier);
-    barrier.style.position = "absolute";
-    barrier.style.width = Math.random() * 500 + 'px';
-    barrier.style.height = Math.random() * 500 + 'px';
-    barrier.style.left = Math.random() * 500 + 'px';
-    barrier.style.top = Math.random() * 500 + 'px';
-    barrier.style.border = "2px solid";
+    this._tankDomElement = null;
+
+    this._createTank = function() {
+        let obstacle = document.getElementById(id);
+        barrier = document.createElement("div");
+        obstacle.appendChild(barrier);
+        barrier.style.position = "absolute";
+        barrier.style.backgroundImage = "url(img/barrier.png)";
+        barrier.style.width = Math.random() * 500 + 'px';
+        barrier.style.height = 100 + 'px';
+        barrier.style.left = Math.random() * 500 + 'px';
+        barrier.style.top = Math.random() * 500 + 'px';
+        barrier.style.border = "2px solid";
+        return barrier;
+    };
+
+    this._tankDomElement = this._createTank();
+
+
+    this.getBoundingBox = () => {
+        return this._tankDomElement.getBoundingClientRect();
+    }
 };
 
 let updatePosition = (pos, direction, deltha) =>
 {
-    let modificator = 10;
+    let modificator = 30;
     let Left = barrier.offsetLeft - modificator;
     let Top = barrier.offsetTop - modificator;
     let width = barrier.offsetWidth + Left + modificator;
@@ -46,62 +59,46 @@ let updatePosition = (pos, direction, deltha) =>
         case TOP:
             if (!((pos.left > Left && pos.left < width) && (pos.top - deltha > Top && pos.top - deltha < Heihght))) {
                 pos.top -= deltha;
-                if (LeftDirection === true)
-                {
-                    pos.left -= deltha;
-                    pos.top -= deltha;
-                };
-                if (RightDirection === true)
-                {
-                    pos.left += deltha;
-                    pos.top -= deltha;
-                }
-            };
+            }
             break;
         case BOTTOM:
             if (!((pos.left > Left && pos.left < width) && (pos.top + deltha > Top && pos.top + deltha < Heihght))) {
                 pos.top += deltha;
-                if (LeftDirection === true)
-                {
-                    pos.left -= deltha;
-                    pos.top += deltha;
-                };
-                if (RightDirection === true)
-                {
-                    pos.left += deltha;
-                    pos.top += deltha;
-                }
-            };
+            }
             break;
         case LEFT:
             if (!((pos.left - deltha > Left && pos.left - deltha < width) && (pos.top > Top && pos.top < Heihght))) {
                 pos.left -= deltha;
-                if (UpDirection === true)
-                {
-                    pos.left -= deltha;
-                    pos.top -= deltha;
-                };
-                if (DownDirection === true)
-                {
-                    pos.left -= deltha;
-                    pos.top += deltha;
-                }
-            };
+            }
             break;
         case RIGHT:
             if (!((pos.left + deltha > Left && pos.left + deltha < width) && (pos.top > Top && pos.top < Heihght))) {
                 pos.left += deltha;
-                if (UpDirection === true)
-                {
-                    pos.left += deltha;
-                    pos.top -= deltha;
-                };
-                if (DownDirection === true)
-                {
-                    pos.left += deltha;
-                    pos.top += deltha;
-                }
-            };
+            }
+            break;
+        case LEFTTOP:
+            if (!((pos.left - deltha > Left && pos.left < width) && (pos.top - deltha > Top && pos.top - deltha < Heihght))) {
+                pos.left -= deltha;
+                pos.top -= deltha;
+            }
+            break;
+        case  RIGHTTOP:
+            if (!((pos.left + deltha > Left && pos.left < width) && (pos.top - deltha > Top && pos.top - deltha < Heihght))) {
+                pos.left += deltha;
+                pos.top -= deltha;
+            }
+            break;
+        case  RIGHTBOTTOM:
+            if (!((pos.left + deltha > Left && pos.left < width) && (pos.top + deltha > Top && pos.top - deltha < Heihght))) {
+                pos.left += deltha;
+                pos.top += deltha
+            }
+            break;
+        case LEFTBOTTOM:
+            if (!((pos.left - deltha > Left && pos.left < width) && (pos.top - deltha > Top && pos.top - deltha < Heihght))) {
+                pos.left -= deltha;
+                pos.top += deltha;
+            }
             break;
     }
     return pos;
@@ -109,42 +106,45 @@ let updatePosition = (pos, direction, deltha) =>
 
 let updateBulletPosition = (pos, direction, deltha) =>
 {
-    let modificator = 10;
-    let Left = barrier.offsetLeft - modificator;
-    let Top = barrier.offsetTop - modificator;
-    let width = barrier.offsetWidth + Left + modificator;
-    let Heihght = barrier.offsetHeight + Top + modificator;
     switch (direction) {
         case TOP:
-            if (!((pos.left > Left && pos.left < width) && (pos.top - deltha > Top && pos.top - deltha < Heihght))) {
                 pos.top -= deltha;
-            };
             break;
         case BOTTOM:
-            if (!((pos.left > Left && pos.left < width) && (pos.top + deltha > Top && pos.top + deltha < Heihght))) {
                 pos.top += deltha;
-            };
             break;
         case LEFT:
-            if (!((pos.left - deltha > Left && pos.left - deltha < width) && (pos.top > Top && pos.top < Heihght))) {
                 pos.left -= deltha;
-            };
             break;
         case RIGHT:
-            if (!((pos.left + deltha > Left && pos.left + deltha < width) && (pos.top > Top && pos.top < Heihght))) {
                 pos.left += deltha;
-            };
+            break;
+        case LEFTTOP:
+                pos.left -= deltha;
+                pos.top -= deltha;
+            break;
+        case  RIGHTTOP:
+                pos.left += deltha;
+                pos.top -= deltha;
+            break;
+        case  RIGHTBOTTOM:
+                pos.left += deltha;
+                pos.top += deltha;
+            break;
+        case LEFTBOTTOM:
+                pos.left -= deltha;
+                pos.top += deltha;
             break;
     }
     return pos;
-};
+}
 
 let each = (collection, handler) => {
     for (let i = 0; i < collection.length; ++i)
     {
         handler(collection[i]);
     }
-};
+}
 
 let findIf = (collection, handler) => {
     let found = false;
@@ -152,24 +152,29 @@ let findIf = (collection, handler) => {
     {
         found = handler(collection[i]);
     }
-};
+}
 
 let intersects = (lhs, rhs) => {
     return !(lhs.left > rhs.left + rhs.width || lhs.left + lhs.width < rhs.left || lhs.top > rhs.top + rhs.height || lhs.top + lhs.height < rhs.top);
-};
+}
 
 let isMoveAction = (action) =>
 {
     return action === LEFT ||
         action === RIGHT ||
         action === TOP ||
-        action === BOTTOM;
-};
+        action === BOTTOM ||
+        action ===  LEFTTOP ||
+        action === RIGHTTOP ||
+        action === LEFTBOTTOM ||
+        action === RIGHTBOTTOM;
+
+}
 
 let isFireAction = (action) =>
 {
     return action === FIRE;
-};
+}
 
 
 function moveDomElement(element, position)
@@ -196,54 +201,50 @@ let Tank = function(containerId, id, frameSize, bulletCreationHandler)
         top: 0
     };
 
-    this.getBoundingBox = () => {
-    return this._tankDomElement.getBoundingClientRect();
-};
 
     this.getBulletsCount = () => {
-    return this._bulletsCount;
-};
+        return this._bulletsCount;
+    }
 
     this.getBulletPosition = () => {
     return {
         top: this._tankDomElement.offsetTop + 15,
         left: this._tankDomElement.offsetLeft + 15
     };
-};
+}
 
-    this.update = (actions, elapsed) => {
-    this._handleActions(actions);
-    this._updatePosition(elapsed);
-};
+    this.update = (actions, elapsed, check) => {
+        this._handleActions(actions, check);
+        this._updatePosition(elapsed);
+    }
 
     this.render = () => {
-    moveDomElement(this._tankDomElement, this._position);
-    this._updateBackgroundImage();
-};
+        moveDomElement(this._tankDomElement, this._position);
+        this._updateBackgroundImage();
+    }
 
     this.destroy = () => {
-    this._tankContainer.removeChild(this._tankDomElement);
-};
+        this._tankContainer.removeChild(this._tankDomElement);
+    }
 
     this._updatePosition = (elapsed) => {
-    let deltha = this._speed * (elapsed / POSITION_COEF);
-    this._position = updatePosition(this._position, this._direction, deltha);
-};
-
+        let deltha = this._speed * (elapsed / POSITION_COEF);
+        this._position = updatePosition(this._position, this._direction, deltha);
+    }
     this._handleActions = (actions) => {
     let that = this;
     each(actions, (actionInfo) => {
         if (isMoveAction(actionInfo.action))
     {
-        that._direction = actionInfo.action;
-        that._speed = (actionInfo.state === ButtonState.PRESS) ? SPEED : 0;
+            that._direction = actionInfo.action;
+            that._speed = (actionInfo.state === ButtonState.PRESS) ? SPEED : 0;
     }
     else if (isFireAction(actionInfo.action) && (actionInfo.state === ButtonState.PRESS))
     {
         that._fire();
     }
-});
-};
+})
+}
 
     this._fire = () =>
     {
@@ -258,7 +259,7 @@ let Tank = function(containerId, id, frameSize, bulletCreationHandler)
             --this._bulletsCount;
             bulletCreationHandler(bullet);
         }
-    };
+    }
 
     this._updateBackgroundImage = () => {
     let map = {};
@@ -271,7 +272,7 @@ let Tank = function(containerId, id, frameSize, bulletCreationHandler)
     {
         this._tankDomElement.style.backgroundPosition = map[this._direction] + 'px';
     }
-};
+}
 
     this._createTank = function(container, tankId)
     {
@@ -289,11 +290,14 @@ let Tank = function(containerId, id, frameSize, bulletCreationHandler)
 
     (() => {
         this._tankContainer = document.getElementById(containerId);
-    this._tankDomElement = this._createTank(this._tankContainer, id);
-    this._bulletContainer = document.getElementById('weapons');
+        this._tankDomElement = this._createTank(this._tankContainer, id);
+        this._bulletContainer = document.getElementById('weapons');
+        this._position.left = Math.random() * frameSize.width;
+        this._position.top = Math.random() * frameSize.height;
+        this.getBoundingBox = () => {
+        return this._tankDomElement.getBoundingClientRect();
+    }
 
-    this._position.left = Math.random() * frameSize.width;
-    this._position.top = Math.random() * frameSize.height;
 })();
 };
 
@@ -306,21 +310,21 @@ let Bullet = function(container, id, position, direction)
     this._position = position;
 
     this.update = (elapsed) => {
-    let deltha = this._speed * (elapsed / POSITION_COEF);
-    this._position = updateBulletPosition(this._position, direction, deltha);
-};
+        let deltha = this._speed * (elapsed / POSITION_COEF);
+        this._position = updateBulletPosition(this._position, direction, deltha);
+    }
 
     this.render = () => {
-    moveDomElement(this._bullDomElement, this._position);
-};
+        moveDomElement(this._bullDomElement, this._position);
+    }
 
     this.getBoundingBox = () => {
-    return this._bullDomElement.getBoundingClientRect();
-};
+        return this._bullDomElement.getBoundingClientRect();
+    }
 
     this.destroy = () => {
-    container.removeChild(this._bullDomElement);
-};
+        container.removeChild(this._bullDomElement);
+    }
 
     this._createDomElement = () =>
     {
@@ -334,11 +338,11 @@ let Bullet = function(container, id, position, direction)
         bullet.style.left = position.left +"px";
         bullet.style.top = position.top + "px";
         return bullet;
-    };
+    }
 
     (() => {
         this._bullDomElement = this._createDomElement();
-    this._bullDomElement.style.transform = 'rotate(' + direction + 'deg)';
+        this._bullDomElement.style.transform = 'rotate(' + direction + 'deg)';
 })();
 };
 
@@ -363,6 +367,7 @@ function getAction(e)
 
 let Game = function() {
     let ENEMY_CREATION_DELAY = 3000;
+    this.checker = true;
     this.player = null;
     this.enemiesCounter = 0;
     this.totalEnemies = 10;
@@ -378,78 +383,20 @@ let Game = function() {
         height: 0
     };
 
-    Barrier();
-
-    this.update = (elapsed) => {
-        this._updateWindowSize();
-        this._createEnemyIfPossible(elapsed);
-
-        each(this.bullets, (bullet) => {
-            bullet.update(elapsed);
-    });
-
-        this.player.update(this.actions, elapsed);
-        this.actions = [];
-        this._handleCollisions();
-    };
+    let barrier = new Barrier('barrier');
 
     this.render = () => {
-        this.player.render();
+            this.player.render();
         each(this.enemies, (enemy) => {
             enemy.render();
-    });
+    })
         each(this.bullets, (bullet) => {
             bullet.render();
-    });
+    })
         this._renderBulletInfo();
-    };
-
-    this._handleCollisions = () => {
-        let that = this;
-        let newBullets = [];
-        each(this.bullets, (bullet) => {
-            let rect = bullet.getBoundingBox();
-        let bulletLet = parseFloat(bullet._position.left);
-        let bulletTop = parseFloat(bullet._position.top);
-        let elem = document.elementFromPoint(bulletLet, bulletTop);
-        let Left = barrier.offsetLeft;
-        let Top = barrier.offsetTop;
-        let width = barrier.offsetWidth + Left ;
-        let Heihght = barrier.offsetHeight + Top ;
-        let modificator = 18;
-        if (elem === null || ((bulletLet + modificator > Left && bulletLet - modificator < width) && (bulletTop + modificator > Top && bulletTop - modificator < Heihght)))
-        {
-            bullet.destroy();
-            return false;
-        }
-
-        let newEnemies = [];
-        findIf(this.enemies, (enemy) => {
-            if (intersects(rect, enemy.getBoundingBox()))
-        {
-            enemy.destroy();
-            --this.totalEnemies;
-            bullet.destroy();
-            return false;
-        }
-
-        newEnemies.push((enemy));
-        return false;
-    });
-        if (newEnemies.length !== that.enemies.length)
-        {
-            that.enemies = newEnemies;
-        }
-        else
-        {
-            newBullets.push(bullet);
-        }
-    });
-        this.bullets = newBullets;
-    };
+    }
 
     this._createEnemyIfPossible = (elapsed) => {
-        console.log(this.enemiesCounter)
         this.sinceLastEnemyCreation += elapsed;
         if (this.sinceLastEnemyCreation >= ENEMY_CREATION_DELAY) {
             if (this.counter  > 0) {
@@ -459,74 +406,159 @@ let Game = function() {
             }
         }
     }
-    ;
 
     this._createEnemy = () =>
     {
         this.enemies.push(new Tank('enemies', 'enemy' + this.enemiesCounter++, this.windowSize));
     }
-    ;
 
     this._renderBulletInfo = () => {
         this.bulletsInfoDomObject.innerHTML = 'Bullet: ' + this.player.getBulletsCount() + ' Enemies: ' + this.totalEnemies;
-    };
+    }
 
     this._updateWindowSize = () => {
         this.windowSize.width = window.innerWidth - 100;
         this.windowSize.height = window.innerHeight - 100;
-    };
+    }
 
     this._getFireHandler = () => {
         let that = this;
         return (bullet) => {
             that.bullets.push(bullet);
-        };
-    };
+        }
+    }
 
     (() => {
         this._updateWindowSize();
     this.bulletsInfoDomObject = document.getElementById('infobullet');
     this.player = new Tank('battlefield', 'Tank', this.windowSize, this._getFireHandler());
     this._createEnemy();
+    this.update = (elapsed) => {
+        this._updateWindowSize();
+        this._createEnemyIfPossible(elapsed);
+
+        each(this.bullets, (bullet) => {
+            bullet.update(elapsed);
+    })
+        this._handleCollisions();
+        this.player.update(this.actions, elapsed);
+        this.actions = [];
+
+    }
+
+    this._handleCollisions = () => {
+        let that = this;
+        let newBullets = [];
+        each(this.bullets, (bullet) => {
+            let rect = bullet.getBoundingBox();
+        let bulletLet = parseFloat(bullet._position.left);
+        let bulletTop = parseFloat(bullet._position.top);
+        let elem = document.elementFromPoint(bulletLet, bulletTop);
+        if (elem === null ||  intersects(rect, barrier.getBoundingBox()))
+        {
+            bullet.destroy();
+            return false;
+        }
+        let newEnemies = [];
+        findIf(this.enemies, (enemy) => {
+            if (intersects(rect, enemy.getBoundingBox()))
+        {
+            enemy.destroy();
+            --that.totalEnemies;
+            bullet.destroy();
+            return false;
+        }
+
+        newEnemies.push((enemy));
+        return false;
+    })
+        if (newEnemies.length !== that.enemies.length)
+        {
+            that.enemies = newEnemies;
+        }
+        else
+        {
+            newBullets.push(bullet);
+        }
+    })
+        this.bullets = newBullets;
+    }
+
+    let Direction;
+    let LeftDirection = false;
+    let RightDirection = false;
+    let UpDirection = false;
+    let DownDirection = false;
 
     addEventListener('keydown', (e) => {
         let actions = getAction(e);
-    if (actions == LEFT) {
+    if (actions === LEFT) {
         LeftDirection = true;
+        Direction = actions
     }
-    ;
-    if (actions == RIGHT) {
-        RightDirection = true
+    if (actions === RIGHT) {
+        RightDirection = true;
+        Direction = actions
     }
-    ;
-    if (actions == TOP) {
-        UpDirection = true
+    if (actions === TOP) {
+        UpDirection = true;
+        Direction = actions
     }
-    ;
-    if (actions == BOTTOM) {
-        DownDirection = true
+    if (actions === BOTTOM) {
+        DownDirection = true;
+        Direction = actions
     }
     this.actions.push({
         state: ButtonState.PRESS,
         action: getAction(e)
     });
+    if ((LeftDirection === true && Direction === TOP) || (UpDirection === true && Direction === LEFT))
+    {
+        this.actions.push({
+            state: ButtonState.PRESS,
+            action: LEFTTOP
+        })
+    }
+
+    if ((RightDirection === true && Direction === TOP) || (UpDirection === true && Direction === RIGHT))
+    {
+        this.actions.push({
+            state: ButtonState.PRESS,
+            action: RIGHTTOP
+        })
+    }
+
+    if ((LeftDirection === true && Direction === BOTTOM) || (DownDirection === true && Direction === LEFT))
+    {
+        this.actions.push({
+            state: ButtonState.PRESS,
+            action: LEFTBOTTOM
+        })
+    }
+
+    if ((RightDirection === true && Direction === BOTTOM) || (DownDirection === true && Direction === RIGHT))
+    {
+        this.actions.push({
+            state: ButtonState.PRESS,
+            action: RIGHTBOTTOM
+        })
+    }
 });
+
+
 
     addEventListener('keyup', (e) => {
     let actions = getAction(e);
-    if (actions == LEFT) {
+    if (actions === LEFT) {
         LeftDirection = false;
     }
-    ;
-    if (actions == RIGHT) {
+    if (actions === RIGHT) {
         RightDirection = false
     }
-    ;
-    if (actions == TOP) {
+    if (actions === TOP) {
         UpDirection = false
     }
-    ;
-    if (actions == BOTTOM) {
+    if (actions === BOTTOM) {
         DownDirection = false
     }
     this.actions.push({
