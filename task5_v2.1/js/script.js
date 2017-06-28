@@ -18,11 +18,10 @@ let ButtonState = {
     PRESS: 'press'
 };
 
-let Barrier = function (id)
-{
+let Barrier = function (id) {
     this._barrierDomElement = null;
 
-    this._createBarrier = function() {
+    this._createBarrier = function () {
         let obstacle = document.getElementById(id);
         barrier = document.createElement("div");
         obstacle.appendChild(barrier);
@@ -39,78 +38,70 @@ let Barrier = function (id)
 
 
     this.getBoundingBox = () => {
-    return this._barrierDomElement.getBoundingClientRect();
-}
+        return this._barrierDomElement.getBoundingClientRect();
+    }
 };
 
-let updatePosition = (pos, direction, deltha) =>
-{
+let updatePosition = (pos, direction, deltha) => {
     pos.top += deltha.y;
     pos.left += deltha.x;
     return pos;
 };
 
-let updateBulletPosition = (pos, direction, deltha) =>
-{
+let updateBulletPosition = (pos, direction, deltha) => {
     switch (direction) {
         case TOP:
-                pos.top -= deltha;
+            pos.top -= deltha;
             break;
         case BOTTOM:
-                pos.top += deltha;
+            pos.top += deltha;
             break;
         case LEFT:
-                pos.left -= deltha;
+            pos.left -= deltha;
             break;
         case RIGHT:
-                pos.left += deltha;
+            pos.left += deltha;
             break;
     }
     return pos;
-}
+};
 
 let each = (collection, handler) => {
-    for (let i = 0; i < collection.length; ++i)
-    {
+    for (let i = 0; i < collection.length; ++i) {
         handler(collection[i]);
     }
-}
+};
 
 let findIf = (collection, handler) => {
     let found = false;
-    for (let i = 0; i < collection.length && !found; ++i)
-    {
+    for (let i = 0; i < collection.length && !found; ++i) {
         found = handler(collection[i]);
     }
-}
+};
 
 let intersects = (lhs, rhs) => {
     return !(lhs.left > rhs.left + rhs.width || lhs.left + lhs.width < rhs.left || lhs.top > rhs.top + rhs.height || lhs.top + lhs.height < rhs.top);
-}
+};
 
-let isMoveAction = (action) =>
-{
+let isMoveAction = (action) => {
     return action === LEFT ||
         action === RIGHT ||
         action === TOP ||
         action === BOTTOM;
 
-}
+};
 
-let isFireAction = (action) =>
-{
+let isFireAction = (action) => {
     return action === FIRE;
-}
+};
 
 
-function moveDomElement(element, position)
-{
+function moveDomElement(element, position) {
     element.style.left = position.left + 'px';
     element.style.top = position.top + 'px';
 }
 
-let Boat = function(containerId, id, frameSize, bulletCreationHandler)
-{
+let Boat = function (containerId, id, frameSize, bulletCreationHandler) {
     let SPEED = 100;
     let POSITION_COEF = 1000;
 
@@ -120,7 +111,7 @@ let Boat = function(containerId, id, frameSize, bulletCreationHandler)
     this._speed =
         {
             x: 0,
-            y:0
+            y: 0
         };
 
     this._bulletContainer = null;
@@ -132,102 +123,89 @@ let Boat = function(containerId, id, frameSize, bulletCreationHandler)
 
     this.getBulletsCount = () => {
         return this._bulletsCount;
-    }
+    };
 
     this.getBulletPosition = () => {
-    return {
-        top: this._boatDomElement.offsetTop + 15,
-        left: this._boatDomElement.offsetLeft + 15
+        return {
+            top: this._boatDomElement.offsetTop + 15,
+            left: this._boatDomElement.offsetLeft + 15
+        };
     };
-}
 
     this.update = (actions, elapsed) => {
         this._handleActions(actions);
         this._updatePosition(elapsed);
-    }
+    };
 
     this.render = () => {
         moveDomElement(this._boatDomElement, this._position);
         this._updateBackgroundImage();
-    }
+    };
 
     this.destroy = () => {
         this._boatContainer.removeChild(this._boatDomElement);
-    }
+    };
 
     this._handleActions = (actions) => {
-    let that = this;
-    each(actions, (actionInfo) => {
-        if (isMoveAction(actionInfo.action))
-    {
-        that._direction = actionInfo.action;
-        switch (actionInfo.action)
-        {
-            case LEFT:
-                if (actionInfo.state === ButtonState.PRESS)
-                {
-                    that._speed.x = -SPEED;
+        let that = this;
+        each(actions, (actionInfo) => {
+            if (isMoveAction(actionInfo.action)) {
+                that._direction = actionInfo.action;
+                switch (actionInfo.action) {
+                    case LEFT:
+                        if (actionInfo.state === ButtonState.PRESS) {
+                            that._speed.x = -SPEED;
+                        }
+                        else {
+                            that._speed.x = 0;
+                        }
+                        break;
+                    case RIGHT:
+                        if (actionInfo.state === ButtonState.PRESS) {
+                            that._speed.x = SPEED;
+                        }
+                        else {
+                            that._speed.x = 0;
+                        }
+                        break;
+                    case TOP:
+                        if (actionInfo.state === ButtonState.PRESS) {
+                            that._speed.y = -SPEED;
+                        }
+                        else {
+                            that._speed.y = 0;
+                        }
+                        break;
+                    case  BOTTOM:
+                        if (actionInfo.state === ButtonState.PRESS) {
+                            that._speed.y = SPEED;
+                        }
+                        else {
+                            that._speed.y = 0;
+                        }
+                        break;
                 }
-                else
-                {
-                    that._speed.x = 0;
-                }
-                break;
-            case RIGHT:
-                if (actionInfo.state === ButtonState.PRESS)
-                {
-                    that._speed.x = SPEED;
-                }
-                else
-                {
-                    that._speed.x = 0;
-                }
-                break;
-            case TOP:
-                if (actionInfo.state === ButtonState.PRESS)
-                {
-                    that._speed.y = -SPEED;
-                }
-                else
-                {
-                    that._speed.y = 0;
-                }
-                break;
-            case  BOTTOM:
-                if (actionInfo.state === ButtonState.PRESS)
-                {
-                    that._speed.y = SPEED;
-                }
-                else
-                {
-                    that._speed.y = 0;
-                }
-                break;
-        }
-    }
-else if (isFireAction(actionInfo.action) && (actionInfo.state === ButtonState.PRESS))
-    {
-        that._fire();
-    }
-})
-}
+            }
+            else if (isFireAction(actionInfo.action) && (actionInfo.state === ButtonState.PRESS)) {
+                that._fire();
+            }
+        })
+    };
 
     this._updatePosition = (elapsed) => {
-    let deltha =
-        {
-            x: 0,
-            y:0
-        };
-    deltha.x = this._speed.x * (elapsed / POSITION_COEF);
-    deltha.y = this._speed.y * (elapsed / POSITION_COEF);
+        let deltha =
+            {
+                x: 0,
+                y: 0
+            };
+        deltha.x = this._speed.x * (elapsed / POSITION_COEF);
+        deltha.y = this._speed.y * (elapsed / POSITION_COEF);
 
-    this._position = updatePosition(this._position, this._direction, deltha);
-    }
+        this._position = updatePosition(this._position, this._direction, deltha);
+    };
 
-    this._fire = () =>
-    {
-        if (this._bulletsCount > 0)
-        {
+    this._fire = () => {
+        if (this._bulletsCount > 0) {
             let bullet = new Bullet(
                 this._bulletContainer,
                 'bullet' + id + Math.random(),
@@ -237,23 +215,20 @@ else if (isFireAction(actionInfo.action) && (actionInfo.state === ButtonState.PR
             --this._bulletsCount;
             bulletCreationHandler(bullet);
         }
-    }
+    };
 
     this._updateBackgroundImage = () => {
-    let map = {};
-    map[RIGHT] = -52;
-    map[LEFT] = -2;
-    map[BOTTOM] = -99;
-    map[TOP] = -130;
+        let map = {};
+        map[RIGHT] = -52;
+        map[LEFT] = -2;
+        map[BOTTOM] = -99;
+        map[TOP] = -130;
+        if (map.hasOwnProperty(this._direction)) {
+            this._boatDomElement.style.backgroundPosition = map[this._direction] + 'px';
+        }
+    };
 
-    if (map.hasOwnProperty(this._direction))
-    {
-        this._boatDomElement.style.backgroundPosition = map[this._direction] + 'px';
-    }
-}
-
-    this._createBoat = function(container, boatId)
-    {
+    this._createBoat = function (container, boatId) {
         let boat = document.createElement("div");
         container.appendChild(boat);
         boat.id = boatId;
@@ -273,14 +248,13 @@ else if (isFireAction(actionInfo.action) && (actionInfo.state === ButtonState.PR
         this._position.left = Math.random() * frameSize.width;
         this._position.top = Math.random() * frameSize.height;
         this.getBoundingBox = () => {
-        return this._boatDomElement.getBoundingClientRect();
-    }
+            return this._boatDomElement.getBoundingClientRect();
+        }
 
-})();
+    })();
 };
 
-let Bullet = function(container, id, position, direction)
-{
+let Bullet = function (container, id, position, direction) {
     let POSITION_COEF = 600;
     this._bullDomElement = null;
     this._speed = 100;
@@ -289,22 +263,21 @@ let Bullet = function(container, id, position, direction)
     this.update = (elapsed) => {
         let deltha = this._speed * (elapsed / POSITION_COEF);
         this._position = updateBulletPosition(this._position, direction, deltha);
-    }
+    };
 
     this.render = () => {
         moveDomElement(this._bullDomElement, this._position);
-    }
+    };
 
     this.getBoundingBox = () => {
         return this._bullDomElement.getBoundingClientRect();
-    }
+    };
 
     this.destroy = () => {
         container.removeChild(this._bullDomElement);
-    }
+    };
 
-    this._createDomElement = () =>
-    {
+    this._createDomElement = () => {
         let bullet = document.createElement("img");
         bullet.src = "img/bullet.png";
         container.appendChild(bullet);
@@ -312,21 +285,19 @@ let Bullet = function(container, id, position, direction)
         bullet.style.width = "15px";
         bullet.style.height = "3px";
         bullet.style.position = "absolute";
-        bullet.style.left = position.left +"px";
+        bullet.style.left = position.left + "px";
         bullet.style.top = position.top + "px";
         return bullet;
-    }
+    };
 
     (() => {
         this._bullDomElement = this._createDomElement();
         this._bullDomElement.style.transform = 'rotate(' + direction + 'deg)';
-})();
+    })();
 };
 
-function getAction(e)
-{
-    switch (e.keyCode)
-    {
+function getAction(e) {
+    switch (e.keyCode) {
         case Keys.RIGHT:
             return RIGHT;
         case Keys.LEFT:
@@ -342,7 +313,7 @@ function getAction(e)
     }
 }
 
-let Game = function() {
+let Game = function () {
     let ENEMY_CREATION_DELAY = 3000;
     this.player = null;
     this.enemiesCounter = 0;
@@ -358,144 +329,132 @@ let Game = function() {
         width: 0,
         height: 0
     };
-        let barrier = new Barrier('barrier');
-
+    let barrier = new Barrier('barrier');
 
     this.render = () => {
-            this.player.render();
+        this.player.render();
         each(this.enemies, (enemy) => {
             enemy.render();
-    })
+        });
         each(this.bullets, (bullet) => {
             bullet.render();
-    })
+        });
         this._renderBulletInfo();
-    }
+    };
 
     this._createEnemyIfPossible = (elapsed) => {
         this.sinceLastEnemyCreation += elapsed;
         if (this.sinceLastEnemyCreation >= ENEMY_CREATION_DELAY) {
-            if (this.counter  > 0) {
-                --this.counter ;
+            if (this.counter > 0) {
+                --this.counter;
                 this._createEnemy();
                 this.sinceLastEnemyCreation = 0;
             }
         }
-    }
+    };
 
-    this._createEnemy = () =>
-    {
+    this._createEnemy = () => {
         this.enemies.push(new Boat('enemies', 'enemy' + this.enemiesCounter++, this.windowSize));
-    }
+    };
 
     this._renderBulletInfo = () => {
         this.bulletsInfoDomObject.innerHTML = 'Bullet: ' + this.player.getBulletsCount() + ' Enemies: ' + this.totalEnemies;
-    }
+    };
 
     this._updateWindowSize = () => {
         this.windowSize.width = window.innerWidth - 100;
         this.windowSize.height = window.innerHeight - 100;
-    }
+    };
 
     this._getFireHandler = () => {
         let that = this;
         return (bullet) => {
             that.bullets.push(bullet);
         }
-    }
+    };
 
     (() => {
         this._updateWindowSize();
-    this.bulletsInfoDomObject = document.getElementById('infobullet');
-    this.player = new Boat('battlefield', 'Boat', this.windowSize, this._getFireHandler());
-    this._createEnemy();
-    this.update = (elapsed) => {
-        this._updateWindowSize();
-        this._createEnemyIfPossible(elapsed);
+        this.bulletsInfoDomObject = document.getElementById('infobullet');
+        this.player = new Boat('battlefield', 'Boat', this.windowSize, this._getFireHandler());
+        this._createEnemy();
+        this.update = (elapsed) => {
+            this._updateWindowSize();
+            this._createEnemyIfPossible(elapsed);
+            each(this.bullets, (bullet) => {
+                bullet.update(elapsed);
+            });
+            this._handleCollisions();
+            this.player.update(this.actions, elapsed);
+            this.actions = [];
 
-        each(this.bullets, (bullet) => {
-            bullet.update(elapsed);
-    })
-        this._handleCollisions();
-        this.player.update(this.actions, elapsed);
-        this.actions = [];
+        };
 
-    }
+        this._handleCollisions = () => {
+            let that = this;
+            let newBullets = [];
+            each(this.bullets, (bullet) => {
+                let rect = bullet.getBoundingBox();
+                let bulletLet = parseFloat(bullet._position.left);
+                let bulletTop = parseFloat(bullet._position.top);
+                let elem = document.elementFromPoint(bulletLet, bulletTop);
+                if (elem === null || intersects(rect, barrier.getBoundingBox())) {
+                    bullet.destroy();
+                    return false;
+                }
+                let newEnemies = [];
+                findIf(this.enemies, (enemy) => {
+                    if (intersects(rect, enemy.getBoundingBox())) {
+                        enemy.destroy();
+                        --that.totalEnemies;
+                        bullet.destroy();
+                        return false;
+                    }
+                    newEnemies.push((enemy));
+                    return false;
+                });
+                if (newEnemies.length !== that.enemies.length) {
+                    that.enemies = newEnemies;
+                }
+                else {
+                    newBullets.push(bullet);
+                }
+            });
+            this.bullets = newBullets;
+        };
 
-    this._handleCollisions = () => {
-        let that = this;
-        let newBullets = [];
-        each(this.bullets, (bullet) => {
-            let rect = bullet.getBoundingBox();
-        let bulletLet = parseFloat(bullet._position.left);
-        let bulletTop = parseFloat(bullet._position.top);
-        let elem = document.elementFromPoint(bulletLet, bulletTop);
-        if (elem === null ||  intersects(rect, barrier.getBoundingBox()))
-        {
-            bullet.destroy();
-            return false;
-        }
-        let newEnemies = [];
-        findIf(this.enemies, (enemy) => {
-            if (intersects(rect, enemy.getBoundingBox()))
-        {
-            enemy.destroy();
-            --that.totalEnemies;
-            bullet.destroy();
-            return false;
-        }
+        addEventListener('keydown', (e) => {
+            this.actions.push({
+                state: ButtonState.PRESS,
+                action: getAction(e)
+            });
+        });
 
-        newEnemies.push((enemy));
-        return false;
-    })
-        if (newEnemies.length !== that.enemies.length)
-        {
-            that.enemies = newEnemies;
-        }
-        else
-        {
-            newBullets.push(bullet);
-        }
-    })
-        this.bullets = newBullets;
-    }
-
-    addEventListener('keydown', (e) => {
-    this.actions.push({
-        state: ButtonState.PRESS,
-        action: getAction(e)
-    });
-});
-
-    addEventListener('keyup', (e) => {
-    this.actions.push({
-        state: ButtonState.RELEASE,
-        action: getAction(e)
-    });
-});
-})();
+        addEventListener('keyup', (e) => {
+            this.actions.push({
+                state: ButtonState.RELEASE,
+                action: getAction(e)
+            });
+        });
+    })();
 };
 
-window.onload = function()
-{
+window.onload = function () {
     let game = new Game();
     let last = null;
-
     let step = (timestamp) => {
-    if (!last)
-    {
-        last = timestamp;
-    }
-    let elapsed = timestamp - last;
-    if (elapsed >= (1000 / 24))
-    {
-        last = timestamp;
-        game.update(elapsed);
-        game.render();
-    }
+        if (!last) {
+            last = timestamp;
+        }
+        let elapsed = timestamp - last;
+        if (elapsed >= (1000 / 24)) {
+            last = timestamp;
+            game.update(elapsed);
+            game.render();
+        }
 
-    window.requestAnimationFrame(step);
-};
+        window.requestAnimationFrame(step);
+    };
 
     window.requestAnimationFrame(step);
 };

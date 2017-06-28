@@ -24,7 +24,6 @@ body
     float: right;
     width: 170px;
     height: 30px;
-    border: 2px solid aliceblue;
 }
 
 .bulletinfo
@@ -33,4 +32,6 @@ body
     float: left;
     width: 170px;
     height: 30px;
+    font-size: 25px;
+    font-family: Arial;
 }
