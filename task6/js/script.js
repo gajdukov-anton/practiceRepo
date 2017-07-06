@@ -23,6 +23,14 @@ let ButtonState = {
     PRESS: 'press'
 };
 
+let moving = (coordinates, position, deltha, element) => {
+    position.left += deltha.x;
+    position.top += deltha.y;
+    let direction = ChooseDirection(deltha.x, deltha.y);
+    updateBackgroundImage(element, direction);
+    return position
+};
+
 let Barrier = function (id) {
     this._barrierDomElement = null;
 
@@ -47,6 +55,35 @@ let Barrier = function (id) {
     }
 };
 
+createVector = (coordinates, _position) => {
+    let deltha = {
+        x: 0,
+        y: 0
+    };
+
+    let x = coordinates.x - _position.left;
+    let y = coordinates.y - _position.top;
+    let Vector;
+    x *= x;
+    y *= y;
+    Vector = x + y;
+    Vector = Math.sqrt(Vector);
+    x = Math.sqrt(x);
+    y = Math.sqrt(y);
+    x = x / Vector;
+    y = y / Vector;
+    deltha.x = x;
+    deltha.y = y;
+    if (coordinates.x < _position.left) {
+        deltha.x *= -1;
+    }
+    if (coordinates.y < _position.top) {
+        deltha.y *= -1;
+    }
+    return deltha;
+};
+
+
 let updateBackgroundImage = (element, direction) => {
     let map = {};
     map[RIGHT] = -52;
@@ -62,63 +99,36 @@ let updateBackgroundImage = (element, direction) => {
     }
 };
 
-let FireDirection = (element) => {
-    let positionBackground = element.style.backgroundPosition;
-    console.log(positionBackground);
-    if (positionBackground == -52 + 'px') {
-        return RIGHT
-    }
-    if (positionBackground == -2 + 'px') {
-        return LEFT
-    }
-    if (positionBackground == -99 + 'px') {
-        return BOTTOM
-    }
-    if (positionBackground == -130 + 'px') {
-        return TOP
-    }
-    if (positionBackground == -170 + 'px') {
-        return RIGHTTOP
-    }
-    if (positionBackground == -240 + 'px') {
-        return RIGHTBOTTOM
-    }
-    if (positionBackground == -300 + 'px') {
-        return LEFTBOTTOM
-    }
-    if (positionBackground == -360 + 'px') {
-        return LEFTTOP
-    }
-};
-
 let ChooseDirection = (delthaX, delthaY) => {
+    let result;
     if (delthaX > 0 && delthaY === 0) {
-        return RIGHT
+        result = RIGHT
     }
     if (delthaX < 0 && delthaY === 0) {
-        return LEFT
+        result = LEFT
     }
     if (delthaX === 0 && delthaY > 0) {
-        return BOTTOM
+        result = BOTTOM
     }
     if (delthaX === 0 && delthaY < 0) {
-        return TOP
+        result = TOP
     }
     if (delthaX > 0 && delthaY > 0) {
-        return RIGHTBOTTOM
+        result = RIGHTBOTTOM
     }
     if (delthaX > 0 && delthaY < 0) {
-        return RIGHTTOP
+        result = RIGHTTOP
     }
     if (delthaX < 0 && delthaY < 0) {
-        return LEFTTOP
+        result = LEFTTOP
     }
     if (delthaX < 0 && delthaY > 0) {
-        return LEFTBOTTOM
+        result = LEFTBOTTOM
     }
     if (delthaX === 0 && delthaY === 0) {
-        return NONE
+        result = NONE
     }
+    return result
 };
 
 let updatePosition = (pos, deltha, element, direction) => {
@@ -128,10 +138,10 @@ let updatePosition = (pos, deltha, element, direction) => {
         deltha.x *= 0.8;
         deltha.y *= 0.8
     }
-    if ((pos.top + deltha.y > 0) && (pos.top + deltha.y <= borderY)) {
+    if ((pos.top + deltha.y > 0) && (pos.top + deltha.y <= borderY - 50)) {
         pos.top += deltha.y;
     }
-    if ((pos.left + deltha.x > 0) && (pos.left + deltha.x <= borderX)) {
+    if ((pos.left + deltha.x > 0) && (pos.left + deltha.x <= borderX - 50)) {
         pos.left += deltha.x;
     }
     direction = ChooseDirection(deltha.x, deltha.y);
@@ -210,11 +220,12 @@ function moveDomElement(element, position) {
     element.style.top = position.top + 'px';
 }
 
-let Boat = function (containerId, id, frameSize, bulletCreationHandler) {
+let Boat = function (containerId, id, frameSize, bulletCreationHandler, checker) {
     let SPEED = 100;
     let POSITION_COEF = 1000;
 
     this._boatContainer = null;
+    this.bulletchange = false;
     this._boatDomElement = null;
     this._direction = NONE;
     this._speed =
@@ -236,8 +247,8 @@ let Boat = function (containerId, id, frameSize, bulletCreationHandler) {
 
     this.getBulletPosition = () => {
         return {
-            top: this._boatDomElement.offsetTop - 15,
-            left: this._boatDomElement.offsetLeft - 15
+            top: this._boatDomElement.offsetTop + 25,
+            left: this._boatDomElement.offsetLeft + 25
         };
     };
 
@@ -319,15 +330,47 @@ let Boat = function (containerId, id, frameSize, bulletCreationHandler) {
         this._position = updatePosition(this._position, deltha, this._boatDomElement, this._direction);
     };
 
+    this.move = (coordinates, elapsed) => {
+        if (!((coordinates.x + 10 > this._position.left && coordinates.x - 10 < this._position.left) && (coordinates.y + 10 > this._position.top && coordinates.y - 10 < this._position.top))) {
+            let deltha = {
+                x: 0,
+                y: 0
+            };
+            let del;
+            del = createVector(coordinates, this._position);
+            deltha.x = del.x * SPEED * (elapsed / POSITION_COEF);
+            deltha.y = del.y * SPEED * (elapsed / POSITION_COEF);
+            this._position = moving(coordinates, this._position, deltha, this._boatDomElement)
+        }
+    };
+    this.mouseFire = (coordinates) => {
+        let checker = 'mouse';
+        let deltha;
+        deltha = createVector(coordinates, this._position);
+        let direction = ChooseDirection(deltha.x, deltha.y);
+        if (this._bulletsCount > 0) {
+            let bullet = new Bullet(
+                this._bulletContainer,
+                'bullet' + id + Math.random(),
+                this.getBulletPosition(),
+                direction, checker, coordinates, deltha.x, deltha.y
+            );
+            --this._bulletsCount;
+            this.bulletchange = true;
+            bulletCreationHandler(bullet);
+        }
+    };
+
     this._fire = () => {
         if (this._bulletsCount > 0) {
             let bullet = new Bullet(
                 this._bulletContainer,
                 'bullet' + id + Math.random(),
                 this.getBulletPosition(),
-                this._direction
+                this._direction, checker
             );
             --this._bulletsCount;
+            this.bulletchange = true;
             bulletCreationHandler(bullet);
         }
     };
@@ -371,15 +414,30 @@ let enemyState = () => {
     return array[random]
 };
 
-let Bullet = function (container, id, position, direction) {
+let Bullet = function (container, id, position, direction, checker, coordinates, x, y) {
     let POSITION_COEF = 600;
+    this._checker = checker;
     this._bullDomElement = null;
     this._speed = 500;
+    let SPEED = 500;
     this._position = position;
 
     this.update = (elapsed) => {
         let deltha = this._speed * (elapsed / POSITION_COEF);
         this._position = updateBulletPosition(this._position, direction, deltha);
+    };
+    this.updateMouseBullet = (elapsed) => {
+        let deltha = {
+            x: 0,
+            y: 0
+        };
+        let gradus = y / x;
+        gradus *= 19;
+        console.log(gradus);
+        this._bullDomElement.style.transform = 'rotate(' + gradus + 'deg)';
+        deltha.x = x * SPEED * (elapsed / POSITION_COEF);
+        deltha.y = y * SPEED * (elapsed / POSITION_COEF);
+        this._position = moving(coordinates, this._position, deltha, this._bullDomElement)
     };
 
     this.render = () => {
@@ -433,6 +491,17 @@ function getAction(e) {
 let Game = function () {
 
     let ENEMY_CREATION_DELAY = 3000;
+    this.coordinates = {
+        x: 0,
+        y: 0
+    };
+    this.Firecoordinates = {
+        x: 0,
+        y: 0
+    };
+    this.keyAction = false;
+    this.mouseFire = false;
+    this.mouseAction = false;
     this.enemiesDirectionCounter = 0;
     this.player = null;
     this.enemiesCounter = 0;
@@ -441,6 +510,7 @@ let Game = function () {
     this.enemies = [];
     this.bullets = [];
     this.actions = [];
+    this.bulletsinfo = true;
     this.sinceLastEnemyCreation = 0;
     this.bulletsInfoDomObject = null;
     this.width = 0;
@@ -474,11 +544,15 @@ let Game = function () {
     };
 
     this._createEnemy = () => {
-        this.enemies.push(new Boat('enemies', 'enemy' + this.enemiesCounter++, this.windowSize, this._getFireHandler()));
+        this.enemies.push(new Boat('enemies', 'enemy' + this.enemiesCounter++, this.windowSize, this._getFireHandler(), false));
     };
 
     this._renderBulletInfo = () => {
-        this.bulletsInfoDomObject.innerHTML = 'Bullet: ' + this.player.getBulletsCount() + ' Enemies: ' + this.totalEnemies;
+        if (this.bulletsinfo === true || this.player.bulletchange === true) {
+            this.player.bulletchange = false;
+            this.bulletsinfo = false;
+            this.bulletsInfoDomObject.innerHTML = 'Bullet: ' + this.player.getBulletsCount() + ' Enemies: ' + this.totalEnemies;
+        }
     };
 
     this._updateWindowSize = () => {
@@ -505,7 +579,7 @@ let Game = function () {
     (() => {
         this._updateWindowSize();
         this.bulletsInfoDomObject = document.getElementById('infobullet');
-        this.player = new Boat('battlefield', 'Boat', this.windowSize, this._getFireHandler());
+        this.player = new Boat('battlefield', 'Boat', this.windowSize, this._getFireHandler(), true);
         this._createEnemy();
 
         this.update = (elapsed) => {
@@ -513,11 +587,28 @@ let Game = function () {
             this._updateWindowSize();
             this._createEnemyIfPossible(elapsed);
             each(this.bullets, (bullet) => {
-                bullet.update(elapsed);
+                if (bullet._checker !== 'mouse') {
+
+                    bullet.update(elapsed);
+                }
+            });
+            each(this.bullets, (bullet) => {
+                if (bullet._checker === 'mouse') {
+                    bullet.updateMouseBullet(elapsed)
+                }
             });
             this._handleCollisions();
-            this.player.update(this.actions, elapsed);
-
+            if (this.keyAction === true) {
+                this.player.update(this.actions, elapsed);
+                this.keyAction = false
+            }
+            if (this.mouseAction === true) {
+                this.player.move(this.coordinates, elapsed);
+            }
+            if (this.mouseFire === true) {
+                this.player.mouseFire(this.Firecoordinates);
+                this.mouseFire = false
+            }
             if (this.enemiesDirectionCounter === 10) {
                 each(this.enemies, (enemies) => {
                     enemies.update(this.updateDirection(this.enemiesAction), elapsed);
@@ -532,7 +623,6 @@ let Game = function () {
 
             this.enemiesAction = [];
             this.actions = [];
-
         };
 
         this._handleCollisions = () => {
@@ -549,8 +639,9 @@ let Game = function () {
                 }
                 let newEnemies = [];
                 findIf(this.enemies, (enemy) => {
-                    if (intersects(rect, enemy.getBoundingBox())) {
+                    if (intersects(rect, enemy.getBoundingBox()) && (bullet._checker === true || bullet._checker === 'mouse')) {
                         enemy.destroy();
+                        that.bulletsinfo = true;
                         --that.totalEnemies;
                         bullet.destroy();
                         return false;
@@ -569,14 +660,29 @@ let Game = function () {
         };
 
         addEventListener('keydown', (e) => {
+            this.keyAction = true;
+            this.mouseAction = false;
             this.actions.push({
                 state: ButtonState.PRESS,
                 action: getAction(e)
             });
         });
 
+        addEventListener('click', () => {
+            this.mouseAction = true;
+            this.coordinates.x = event.clientX;
+            this.coordinates.y = event.clientY
+        });
+
+        window.oncontextmenu = () => {
+            this.mouseFire = true;
+            this.Firecoordinates.x = event.clientX;
+            this.Firecoordinates.y = event.clientY;
+            return false;
+        };
 
         addEventListener('keyup', (e) => {
+            this.keyAction = true;
             this.actions.push({
                 state: ButtonState.RELEASE,
                 action: getAction(e)
